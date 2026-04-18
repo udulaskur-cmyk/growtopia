@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Growtopia — Build. Farm. Trade. Explore.</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d0d1a;
+    --bg2:       #111128;
+    --bg3:       #181835;
+    --gem-blue:  #4fc3f7;
+    --gem-green: #69f0ae;
+    --gem-pink:  #f48fb1;
+    --gem-gold:  #ffd740;
+    --gem-purple:#ce93d8;
+    --text:      #e8e8ff;
+    --muted:     #8888aa;
+    --card-bg:   rgba(255,255,255,0.04);
+    --border:    rgba(255,255,255,0.07);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ─────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── NAV ────────────────────────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 4rem;
+    background: rgba(13,13,26,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.85rem;
+    color: var(--gem-green);
+    text-shadow: 0 0 18px rgba(105,240,174,0.6);
+    letter-spacing: 1px;
+  }
+  .nav-logo span { color: var(--gem-gold); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gem-blue); }
+  .nav-cta {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.6rem 1.4rem;
+    border: 1.5px solid var(--gem-green);
+    color: var(--gem-green);
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav-cta:hover { background: var(--gem-green); color: var(--bg); }
+
+  /* ── HERO ───────────────────────────────── */
+  #hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 6rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* animated pixel grid bg */
+  #hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(79,195,247,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,195,247,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridShift 20s linear infinite;
+  }
+  @keyframes gridShift { to { background-position: 40px 40px; } }
+
+  /* radial glow */
+  #hero::after {
+    content: '';
+    position: absolute;
+    width: 900px; height: 900px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(105,240,174,0.07) 0%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gem-gold);
+    border: 1px solid rgba(255,215,64,0.35);
+    padding: 0.35rem 1rem;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    background: rgba(255,215,64,0.06);
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(2.2rem, 6vw, 5rem);
+    line-height: 1.4;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--gem-green) 0%, var(--gem-blue) 50%, var(--gem-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 40px rgba(79,195,247,0.25));
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .hero-sub {
+    font-size: 1.2rem;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.75;
+    margin-bottom: 3rem;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .hero-buttons {
+    display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+  .btn-primary {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 1rem 2.2rem;
+    background: linear-gradient(135deg, var(--gem-green), var(--gem-blue));
+    color: var(--bg);
+    border: none; border-radius: 4px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 30px rgba(105,240,174,0.25);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 40px rgba(105,240,174,0.45);
+  }
+  .btn-secondary {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 1rem 2.2rem;
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--gem-blue); color: var(--gem-blue); }
+
+  .hero-stats {
+    display: flex; gap: 3.5rem; margin-top: 5rem;
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 1.3rem;
+    color: var(--gem-green);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+
+  /* floating pixels */
+  .pixel {
+    position: absolute;
+    border-radius: 2px;
+    animation: floatPixel linear infinite;
+    pointer-events: none;
+    opacity: 0;
+  }
+  @keyframes floatPixel {
+    0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.6; }
+    100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SECTION BASE ───────────────────────── */
+  section { padding: 6rem 4rem; }
+  .section-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--gem-gold);
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(1.2rem, 2.5vw, 2rem);
+    line-height: 1.5;
+    margin-bottom: 1.2rem;
+  }
+  .section-desc {
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 520px;
+    font-size: 1.05rem;
+  }
+
+  /* ── ABOUT ──────────────────────────────── */
+  #about {
+    background: var(--bg2);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+  .about-visual {
+    position: relative;
+    aspect-ratio: 1;
+    max-width: 440px;
+  }
+  .about-visual .tile-grid {
+    display: grid;
+    grid-template-columns: repeat(6,1fr);
+    gap: 6px;
+    width: 100%;
+  }
+  .tile {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    animation: tilePulse 3s ease-in-out infinite;
+  }
+  @keyframes tilePulse {
+    0%,100% { transform: scale(1); opacity: 0.85; }
+    50%      { transform: scale(1.06); opacity: 1; }
+  }
+
+  /* ── FEATURES ───────────────────────────── */
+  #features { text-align: center; background: var(--bg); }
+  #features .section-desc { margin: 0 auto; }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 4rem;
+    text-align: left;
+  }
+  .feat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem 1.8rem;
+    transition: transform 0.25s, border-color 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent-color, var(--gem-green));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.35s;
+  }
+  .feat-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.14); }
+  .feat-card:hover::before { transform: scaleX(1); }
+  .feat-icon {
+    font-size: 2.2rem;
+    margin-bottom: 1.2rem;
+    display: block;
+  }
+  .feat-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.72rem;
+    margin-bottom: 0.9rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .feat-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.7; }
+
+  /* ── WORLDS ─────────────────────────────── */
+  #worlds { background: var(--bg3); }
+  .worlds-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 3rem;
+  }
+  .worlds-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  .world-card {
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 3/4;
+    cursor: pointer;
+    group: true;
+  }
+  .world-bg {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 5rem;
+    transition: transform 0.4s;
+    position: relative;
+  }
+  .world-card:hover .world-bg { transform: scale(1.08); }
+  .world-overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 1.2rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 55%);
+  }
+  .world-name {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6rem;
+    line-height: 1.5;
+    margin-bottom: 0.3rem;
+  }
+  .world-desc { font-size: 0.78rem; color: rgba(255,255,255,0.6); }
+
+  /* ── TRADING ────────────────────────────── */
+  #trading {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+    background: var(--bg2);
+  }
+  .trade-panel {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .trade-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.2rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.8rem;
+  }
+  .trade-header span { color: var(--gem-green); }
+  .trade-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.75rem;
+  }
+  .trade-item { display: flex; align-items: center; gap: 0.6rem; }
+  .trade-item em { font-style: normal; font-size: 1.1rem; }
+  .price-up   { color: var(--gem-green); }
+  .price-down { color: var(--gem-pink); }
+
+  /* ── COMMUNITY ──────────────────────────── */
+  #community { text-align: center; background: var(--bg); }
+  .testimonials {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 1.5rem;
+    margin-top: 3.5rem;
+    text-align: left;
+  }
+  .testi {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.8rem;
+  }
+  .testi-stars { color: var(--gem-gold); font-size: 0.9rem; margin-bottom: 1rem; }
+  .testi-text { color: var(--muted); font-size: 0.95rem; line-height: 1.75; margin-bottom: 1.3rem; }
+  .testi-author { display: flex; align-items: center; gap: 0.8rem; }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+  }
+  .author-name { font-weight: 700; font-size: 0.9rem; }
+  .author-tag  { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted); }
+
+  /* ── DOWNLOAD CTA ───────────────────────── */
+  #download {
+    background: var(--bg3);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #download::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(105,240,174,0.06) 0%, transparent 70%);
+  }
+  .platform-badges {
+    display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap;
+    margin-top: 2.5rem;
+  }
+  .badge {
+    display: flex; align-items: center; gap: 0.7rem;
+    border: 1.5px solid var(--border);
+    padding: 0.8rem 1.6rem;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    text-decoration: none; color: var(--text);
+    transition: border-color 0.2s, background 0.2s;
+    font-size: 0.9rem;
+  }
+  .badge:hover { border-color: var(--gem-blue); background: rgba(79,195,247,0.06); }
+  .badge-icon { font-size: 1.5rem; }
+  .badge-label { font-family: 'Space Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .badge-sub { font-size: 0.72rem; color: var(--muted); }
+
+  /* ── FOOTER ─────────────────────────────── */
+  footer {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 3rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--gem-green); }
+  .footer-links { display: flex; gap: 2rem; }
+
+  /* ── SCROLL REVEAL ──────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ─────────────────────────── */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 1.5rem; }
+    #about, #trading { grid-template-columns: 1fr; gap: 2.5rem; }
+    .features-grid, .worlds-grid { grid-template-columns: 1fr 1fr; }
+    .testimonials { grid-template-columns: 1fr; }
+    .hero-stats { gap: 2rem; }
+    .worlds-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+  }
+
+  @media (max-width: 560px) {
+    .features-grid, .worlds-grid { grid-template-columns: 1fr; }
+    .hero-stats { flex-direction: column; gap: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────── -->
+<nav>
+  <div class="nav-logo">GROW<span>TOPIA</span></div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#worlds">Worlds</a></li>
+    <li><a href="#trading">Trading</a></li>
+    <li><a href="#community">Community</a></li>
+  </ul>
+  <a class="nav-cta" href="#download">Play Free</a>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────── -->
+<section id="hero">
+  <!-- floating pixels -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const colors = ['#69f0ae','#4fc3f7','#f48fb1','#ffd740','#ce93d8'];
+      for (let i = 0; i < 22; i++) {
+        const p = document.createElement('div');
+        p.className = 'pixel';
+        const size = Math.random() * 10 + 4;
+        p.style.cssText = `
+          width:${size}px; height:${size}px;
+          left:${Math.random()*100}%;
+          background:${colors[Math.floor(Math.random()*colors.length)]};
+          animation-duration:${Math.random()*12+8}s;
+          animation-delay:${Math.random()*10}s;
+        `;
+        document.getElementById('hero').appendChild(p);
+      }
+    });
+  </script>
+
+  <div class="hero-badge">✦ Free to Play — Available on All Platforms</div>
+
+  <h1 class="hero-title">BUILD<br>YOUR<br>WORLD.</h1>
+
+  <p class="hero-sub">
+    Growtopia is a massively multiplayer sandbox where you plant trees, harvest blocks,
+    craft items, and trade with millions of players across infinite worlds.
+  </p>
+
+  <div class="hero-buttons">
+    <a href="#download" class="btn-primary">▶ Play Now — Free</a>
+    <a href="#features" class="btn-secondary">Explore Features</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <span class="stat-num">50M+</span>
+      <span class="stat-label">Players Worldwide</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">∞</span>
+      <span class="stat-label">Worlds to Explore</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">1,000+</span>
+      <span class="stat-label">Unique Items</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">10+</span>
+      <span class="stat-label">Years Running</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── ABOUT ─────────────────────────────────── -->
+<section id="about">
+  <div class="reveal">
+    <span class="section-tag">// What is Growtopia?</span>
+    <h2 class="section-title">Plant. Harvest.<br>Build Anything.</h2>
+    <p class="section-desc">
+      Growtopia is a 2D sandbox MMO game where your imagination is the only limit.
+      Plant seeds, grow trees, smash blocks, collect items, and construct anything
+      from a simple house to a sprawling parkour course — all in real time with
+      friends from around the globe.
+    </p>
+    <br><br>
+    <p class="section-desc">
+      Every item in the game comes from seeds. Splice seeds together to discover
+      thousands of combinations. Trade your rarest finds in the player-driven economy
+      powered by World Locks and Gems.
+    </p>
+  </div>
+
+  <div class="about-visual reveal">
+    <div class="tile-grid" id="tileGrid"></div>
+  </div>
+
+  <script>
+    const tileColors = [
+      '#1a3a2a','#0f2d1f','#2d4a1e','#1b3b10',
+      '#4a2d0a','#3b2208','#5c3a0a','#2d4a1e',
+      '#0d1f3a','#1a2f4a','#0f2040','#1a3a2a',
+      '#3a1a3a','#2d1f3a','#4a0d4a','#1a3a2a',
+      '#3a3a0d','#2d2d08','#4a4a0d','#2d4a1e',
+      '#1a0d3a','#0d1a3a','#1a2a4a','#3a1a2a',
+    ];
+    const tileEmojis = ['🌱','🌿','🌳','💎','🪨','⭐','🌸','🍄','💫','🔮','🌺','🎋'];
+    document.addEventListener('DOMContentLoaded', () => {
+      const grid = document.getElementById('tileGrid');
+      for (let i = 0; i < 36; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.style.background = tileColors[i % tileColors.length];
+        tile.style.animationDelay = (i * 0.08) + 's';
+        tile.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+        if (Math.random() > 0.65) {
+          tile.style.fontSize = '1rem';
+          tile.style.display = 'flex';
+          tile.style.alignItems = 'center';
+          tile.style.justifyContent = 'center';
+          tile.textContent = tileEmojis[Math.floor(Math.random() * tileEmojis.length)];
+        }
+        grid.appendChild(tile);
+      }
+    });
+  </script>
+</section>
+
+<!-- ── FEATURES ───────────────────────────────── -->
+<section id="features">
+  <div class="reveal">
+    <span class="section-tag">// Core Gameplay</span>
+    <h2 class="section-title">Everything You<br>Can Imagine.</h2>
+    <p class="section-desc">Six pillars of gameplay that keep millions coming back every day.</p>
+  </div>
+
+  <div class="features-grid reveal">
+    <div class="feat-card" style="--accent-color: var(--gem-green);">
+      <span class="feat-icon">🌱</span>
+      <div class="feat-title">Farming & Harvesting</div>
+      <p class="feat-desc">Plant seeds, watch trees grow, and harvest blocks. Splice seeds together to discover thousands of unique tree combinations and rare items.</p>
+    </div>
+    <div class="feat-card" style="--accent-color: var(--gem-blue);">
+      <span class="feat-icon">🏗️</span>
+      <div class="feat-title">World Building</div>
+      <p class="feat-desc">Every world is a blank canvas. Build pixel art, parkour courses, epic castles, or entire cities block by block with friends.</p>
+    </div>
+    <div class="feat-card" style="--accent-color: var(--gem-gold);">
+      <span class="feat-icon">💰</span>
+      <div class="feat-title">Player Economy</div>
+      <p class="feat-desc">A fully player-driven trading economy. Buy low, sell high, run your own shop world, or become a Growtopia millionaire through smart trades.</p>
+    </div>
+    <div class="feat-card" style="--accent-color: var(--gem-pink);">
+      <span class="feat-icon">⚔️</span>
+      <div class="feat-title">PvP & Mini-Games</div>
+      <p class="feat-desc">Battle in player-made arenas, compete in parkour races, and earn trophies in dozens of community-created mini-games and competitions.</p>
+    </div>
+    <div class="feat-card" style="--accent-color: var(--gem-purple);">
+      <span class="feat-icon">🎉</span>
+      <div class="feat-title">Live Events</div>
+      <p class="feat-desc">Year-round seasonal events with exclusive items, limited cosmetics, and massive community challenges. There's always something new happening.</p>
+    </div>
+    <div class="feat-card" style="--accent-color: var(--gem-gold);">
+      <span class="feat-icon">👗</span>
+      <div class="feat-title">Customization</div>
+      <p class="feat-desc">Express yourself with thousands of wearable items, cosmetics, and accessories. Your Growtopian, your style. Stand out in the crowd.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── WORLDS ─────────────────────────────────── -->
+<section id="worlds">
+  <div class="worlds-header reveal">
+    <div>
+      <span class="section-tag">// World Types</span>
+      <h2 class="section-title">Worlds Without Limits.</h2>
+    </div>
+    <p class="section-desc" style="max-width:360px;">Every world you visit was built by a real player. Millions of unique worlds exist right now.</p>
+  </div>
+
+  <div class="worlds-grid reveal">
+    <div class="world-card">
+      <div class="world-bg" style="background: linear-gradient(135deg, #1a3a1a 0%, #0d2210 100%);">🌿🌿<br>🌳🌿<br>🌱🍄</div>
+      <div class="world-overlay">
+        <div class="world-name">FARM WORLDS</div>
+        <div class="world-desc">Grow & harvest rare trees</div>
+      </div>
+    </div>
+    <div class="world-card">
+      <div class="world-bg" style="background: linear-gradient(135deg, #0d1a3a 0%, #071022 100%);">⭐💫<br>🔮✨<br>💎🌙</div>
+      <div class="world-overlay">
+        <div class="world-name">TRADE WORLDS</div>
+        <div class="world-desc">Buy, sell & negotiate</div>
+      </div>
+    </div>
+    <div class="world-card">
+      <div class="world-bg" style="background: linear-gradient(135deg, #3a0a0a 0%, #1f0505 100%);">⚔️🛡️<br>🗡️💥<br>🔥🏆</div>
+      <div class="world-overlay">
+        <div class="world-name">BATTLE ARENAS</div>
+        <div class="world-desc">PvP combat & duels</div>
+      </div>
+    </div>
+    <div class="world-card">
+      <div class="world-bg" style="background: linear-gradient(135deg, #1a0a3a 0%, #0d0522 100%);">🏰🗼<br>🎨🖼️<br>🪄🌈</div>
+      <div class="world-overlay">
+        <div class="world-name">BUILD WORLDS</div>
+        <div class="world-desc">Epic player creations</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TRADING ─────────────────────────────────── -->
+<section id="trading">
+  <div class="reveal">
+    <span class="section-tag">// The Economy</span>
+    <h2 class="section-title">The World<br>Runs on Locks.</h2>
+    <p class="section-desc">
+      World Locks are the backbone of Growtopia's economy. Every rare item,
+      exclusive cosmetic, and powerful tool has a market value determined entirely
+      by the players. Become a trader, merchant, or even a mogul.
+    </p>
+    <br>
+    <p class="section-desc">
+      The game is free to play, and the rarest items can be earned through
+      skill, smart trading, and dedicated farming — no pay-to-win.
+    </p>
+  </div>
+
+  <div class="trade-panel reveal">
+    <div class="trade-header">
+      <span>Item Marketplace</span>
+      <span>🟢 Live Prices</span>
+    </div>
+    <div class="trade-row">
+      <div class="trade-item"><em>🔒</em> World Lock</div>
+      <div class="price-up">1 WL ↑</div>
+    </div>
+    <div class="trade-row">
+      <div class="trade-item"><em>💎</em> Diamond Lock</div>
+      <div class="price-up">100 WL ↑</div>
+    </div>
+    <div class="trade-row">
+      <div class="trade-item"><em>🐉</em> Dragon Hand</div>
+      <div class="price-down">180 WL ↓</div>
+    </div>
+    <div class="trade-row">
+      <div class="trade-item"><em>👑</em> Golden Crown</div>
+      <div class="price-up">320 WL ↑</div>
+    </div>
+    <div class="trade-row">
+      <div class="trade-item"><em>🌺</em> Legendary Wings</div>
+      <div class="price-up">450 WL ↑</div>
+    </div>
+    <div class="trade-row">
+      <div class="trade-item"><em>🔮</em> Magic Crystals</div>
+      <div class="price-down">25 WL ↓</div>
+    </div>
+    <div class="trade-row">
+      <div class="trade-item"><em>⚡</em> Thunder Wings</div>
+      <div class="price-up">890 WL ↑</div>
+    </div>
+    <div style="padding:0.8rem 0; font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--muted); text-align:center;">
+      Prices fluctuate based on player supply & demand
+    </div>
+  </div>
+</section>
+
+<!-- ── COMMUNITY ───────────────────────────────── -->
+<section id="community">
+  <div class="reveal">
+    <span class="section-tag">// Player Stories</span>
+    <h2 class="section-title">Millions of<br>Growtopians.</h2>
+    <p class="section-desc">Real players. Real worlds. Real friendships built one block at a time.</p>
+  </div>
+
+  <div class="testimonials reveal">
+    <div class="testi">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"I've been playing since 2013 and it never gets old. Started from nothing, now I own a trading world with 5,000 daily visitors. Best game ever made."</p>
+      <div class="testi-author">
+        <div class="avatar" style="background:linear-gradient(135deg,#1a3a2a,#0d2210);">🌿</div>
+        <div>
+          <div class="author-name">GrowKing2013</div>
+          <div class="author-tag">Veteran Player · 11 years</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"Met my best friends here. We built an entire city together and run weekly mini-game tournaments. Growtopia is so much more than a game — it's a community."</p>
+      <div class="testi-author">
+        <div class="avatar" style="background:linear-gradient(135deg,#0d1a3a,#071022);">💎</div>
+        <div>
+          <div class="author-name">StarBuildz</div>
+          <div class="author-tag">Builder · Guild Leader</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"Started farming on mobile, flipped my first Dragon Hand, never looked back. The economy is the most fun I've had in any video game. Real skill, real rewards."</p>
+      <div class="testi-author">
+        <div class="avatar" style="background:linear-gradient(135deg,#3a0a0a,#1f0505);">⚔️</div>
+        <div>
+          <div class="author-name">TraderMax</div>
+          <div class="author-tag">Merchant · 850+ WL portfolio</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DOWNLOAD CTA ───────────────────────────── -->
+<section id="download">
+  <div class="reveal" style="position:relative;z-index:1;">
+    <span class="section-tag">// Download</span>
+    <h2 class="section-title" style="max-width:600px;margin:0 auto 1rem;">Ready to Start<br>Your World?</h2>
+    <p class="section-desc" style="margin:0 auto;">
+      Growtopia is completely free to play on every platform. No download fees. No pay-to-win. Just pure sandbox fun.
+    </p>
+    <div class="platform-badges">
+      <a href="#" class="badge">
+        <span class="badge-icon">🍎</span>
+        <div>
+          <div class="badge-sub">Download on the</div>
+          <div class="badge-label">App Store</div>
+        </div>
+      </a>
+      <a href="#" class="badge">
+        <span class="badge-icon">🤖</span>
+        <div>
+          <div class="badge-sub">Get it on</div>
+          <div class="badge-label">Google Play</div>
+        </div>
+      </a>
+      <a href="#" class="badge">
+        <span class="badge-icon">🖥️</span>
+        <div>
+          <div class="badge-sub">Available on</div>
+          <div class="badge-label">Windows PC</div>
+        </div>
+      </a>
+      <a href="#" class="badge">
+        <span class="badge-icon">🐧</span>
+        <div>
+          <div class="badge-sub">Available on</div>
+          <div class="badge-label">Linux</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────── -->
+<footer>
+  <div class="nav-logo" style="font-size:0.7rem;">GROW<span style="color:var(--gem-gold)">TOPIA</span></div>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Service</a>
+    <a href="#">Support</a>
+    <a href="#">Community Wiki</a>
+  </div>
+  <span>© 2024 Ubisoft. Growtopia is a registered trademark.</span>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(r => observer.observe(r));
+
+  // Tile hover sparkle
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tile').forEach(tile => {
+      tile.addEventListener('mouseenter', () => {
+        tile.style.transform = 'scale(1.15)';
+        tile.style.zIndex = '10';
+      });
+      tile.addEventListener('mouseleave', () => {
+        tile.style.transform = '';
+        tile.style.zIndex = '';
+      });
+    });
+
+    // Feature card stagger
+    document.querySelectorAll('.feat-card').forEach((card, i) => {
+      card.style.transitionDelay = (i * 0.06) + 's';
+    });
+  });
+</script>
+
+</body>
+</html>
